@@ -16,6 +16,15 @@ typedef struct trans_func{
   unsigned int num_evictions;
 } trans_func_t;
 
+typedef struct cache{
+  unsigned int num_sets;
+  unsigned int assoc;
+  unsigned int setIndexBits;
+  unsigned int blockBits;
+  unsigned int blockSize;
+  unsigned long[][] tag;
+} cache_t;
+
 /* 
  * printSummary - This function provides a standard way for your cache
  * simulator * to display its final hit and miss statistics
