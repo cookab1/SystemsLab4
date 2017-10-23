@@ -38,6 +38,21 @@ int main(int argc, char **argv)
     }
 
     //malloc the 2 dimen array
+    cache->tag = calloc(cache->num_sets, sizeof cache->tag);
+    int i = 0;
+    for(; i < cache->num_sets; i++)
+    {
+	cache->tag[i] = calloc(cache->assoc, sizeof cache->tag);
+    }
+    int j;
+    int flag = 1;
+    for(i = 0; i < cache->num_sets; i++) {
+        for(j = 0; j < cache->assoc; j++) {
+            if (cache->tag == NULL)
+                flag = 0;
+        }
+    }
+    printf("%d \n", flag);
 
     file = fopen(fileName, "r");
     if (file) {
