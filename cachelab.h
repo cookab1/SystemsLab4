@@ -22,7 +22,7 @@ typedef struct cache{
   unsigned int setIndexBits;
   unsigned int blockBits;
   unsigned int blockSize;
-  unsigned long[][] tag;
+  unsigned long **tag;
 } cache_t;
 
 /* 
