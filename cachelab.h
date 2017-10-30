@@ -47,6 +47,8 @@ int shiftAllTags(int, unsigned long*, int);
 
 void makeTagRecent(int, unsigned long*);
 
+int getBits(int, int, unsigned long);
+
 int isError(char*);
 
 #endif /* CACHELAB_TOOLS_H */

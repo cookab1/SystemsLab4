@@ -48,13 +48,13 @@ int main(int argc, char **argv)
         }
     }
 
-    numTag = 64 - cache->setIndexBits - blockBits;
+    numTag = 32 - cache->setIndexBits - cache->blockBits;
     //malloc the 2 dimen array
-    cache->tags = calloc(cache->num_sets, sizeof cache->tag);
+    cache->tags = calloc(cache->num_sets, sizeof cache->tags);
     int i = 0;
     for(; i < cache->num_sets; i++)
     {
-	cache->tags[i] = calloc(cache->assoc, sizeof cache->tag);
+	cache->tags[i] = calloc(cache->assoc, sizeof cache->tags);
     }
     
     //is the 2 dimen array allocated?
@@ -84,28 +84,29 @@ int main(int argc, char **argv)
     char opp; //the type of opporation
     unsigned long address; //the address of the memory access
     int size; //the size of the memory access
-    int blockInd;
+    int setInd;
     int tag;
 
     while((c = getc(file)) != EOF) {
         fgets(buf, 80, file);
+        //printf("First char of buf: %c", buf[0]);
         //if 'I' is in the first char slot, skip the line
-        if(buf[0] == ' ') {
+        if(buf[0] != 'I') {
             sscanf(buf, " %c %lx,%x", &opp, &address, &size); 
 
             if(isError(buf) == 1) {
 	        exit(1);
             }
 
-	    setInd = getBits(0, cache->setIndexBits - 1, address);
-	    tag = getBits(31 - cache->numTag, 31, address);
+	    setInd = getBits(cache->blockBits - 1, cache->blockBits + cache->setIndexBits - 1, address);
+	    tag = getBits(31 - numTag, 31, address);
 
 	    bool found = false;
 	    for(i = 0; i < cache->assoc && !found; i++) {
-	        if(cache->num_sets[setInd][i] == tag) {
+	        if(cache->tags[setInd][i] == tag) {
     	            found = true;
-    	            makeRecent(i, cache->tags[setInd]);
-	            hits++;
+    	            makeTagRecent(i, cache->tags[setInd]);
+    	            hits++;
 	        }
 	        else if(i == cache->assoc - 1) {
 		    misses++;
@@ -122,9 +123,20 @@ int main(int argc, char **argv)
 	putchar(buf[i]);
     }
     */
-    
-    //printSummary(0, 0, 0);
+
+    printSummary(hits, misses, evicts);
     return 0;
+}
+
+void makeTagRecent(int currIndex, unsigned long *set){
+    unsigned long tempTag = set[currIndex];
+    //we might need to make this i <= currIndex; 
+    for (int i = currIndex; i > 0; i--){
+        //shift all the tags down
+        set[i] = set[i - 1];
+    }
+    set[0] = tempTag;
+    
 }
 
 int isError(char *buf) {
@@ -145,7 +157,7 @@ int getBits(int srt, int end, unsigned long src) {
 
 int shiftAllTags(int tag, unsigned long *set, int assoc){
     bool evicts = false;
-    if(set[assoc - 1] != NULL)
+    if(set[assoc - 1] != 0)
         evicts = true;
 
     //shift all elements down the priority line
