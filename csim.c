@@ -8,10 +8,16 @@
 //Names :: Andy Cook :: Brenner Harris
 //UserIDs :: cookab1 :: harrisbd
 
+const int SIZE = 64;
+
 bool verboseFlag = false;
 
 int main(int argc, char **argv)
 {
+    int hits = 0;
+    int misses = 0;
+    int evicts = 0;
+    int numTag;
     bool helpFlag = false;
     char* fileName = NULL;
     FILE* file = NULL;
@@ -35,12 +41,14 @@ int main(int argc, char **argv)
                 break;
             case 'b':
             	cache->blockBits = atoi(optarg);
+		cache->blockSize = pow(2, cache->blockBits);
             	break;
             case 't':
             	fileName = optarg;
         }
     }
 
+    numTag = 64 - cache->setIndexBits - blockBits;
     //malloc the 2 dimen array
     cache->tag = calloc(cache->num_sets, sizeof cache->tag);
     int i = 0;
@@ -76,16 +84,25 @@ int main(int argc, char **argv)
     char opp; //the type of opporation
     unsigned long address; //the address of the memory access
     int size; //the size of the memory access
+    int blockInd;
+    int tag;
 
     while((c = getc(file)) != EOF) {
         fgets(buf, 80, file);
-        sscanf(buf, " %c %lx,%x", &opp, &address, &size); 
+        //if 'I' is in the first char slot, skip the line
+        if(buf[0] == ' ') {
+            sscanf(buf, " %c %lx,%x", &opp, &address, &size); 
 
-        if(isError(buf) == 1) {
-	    printf("%s\n","Error");
-	    exit(1);
+            if(isError(buf) == 1) {
+	        exit(1);
+            }
+
+	    blockInd = getBits(0, cache->blockBits - 1, address);
+	    tag = getBits(31 - cache->numTag, 31, address);
+
+
+	    cache->num_sets[
         }
-
         //printf(" %c %lx,%x\n", opp, address, size);
     }
     /*
@@ -100,7 +117,7 @@ int main(int argc, char **argv)
 }
 
 int isError(char *buf) {
-    
+    //error checking and print statments
     return false;
 }
 
