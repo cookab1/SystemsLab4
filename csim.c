@@ -50,11 +50,11 @@ int main(int argc, char **argv)
 
     numTag = 64 - cache->setIndexBits - blockBits;
     //malloc the 2 dimen array
-    cache->tag = calloc(cache->num_sets, sizeof cache->tag);
+    cache->tags = calloc(cache->num_sets, sizeof cache->tag);
     int i = 0;
     for(; i < cache->num_sets; i++)
     {
-	cache->tag[i] = calloc(cache->assoc, sizeof cache->tag);
+	cache->tags[i] = calloc(cache->assoc, sizeof cache->tag);
     }
     
     //is the 2 dimen array allocated?
@@ -101,16 +101,16 @@ int main(int argc, char **argv)
 	    tag = getBits(31 - cache->numTag, 31, address);
 
 	    bool found = false;
-	    for(i=0; i < cache->assoc && !found; i++) {
+	    for(i = 0; i < cache->assoc && !found; i++) {
 	        if(cache->num_sets[setInd][i] == tag) {
     	            found = true;
-    	            makeRecent(i, num_sets[setInd]);
+    	            makeRecent(i, cache->tags[setInd]);
 	            hits++;
 	        }
 	        else if(i == cache->assoc - 1) {
 		    misses++;
-		    shift(tag, num_sets[setInd]);
-                    
+		    if(shiftAllTags(tag, cache->tags[setInd], cache->assoc))
+    		        evicts++;
 	        }
 	    }
         }
@@ -141,4 +141,19 @@ int getBits(int srt, int end, unsigned long src) {
     src >>= srt;
     src &= ((1L << numBits) - 1);
     return src; 
+}
+
+int shiftAllTags(int tag, unsigned long *set, int assoc){
+    bool evicts = false;
+    if(set[assoc - 1] != NULL)
+        evicts = true;
+
+    //shift all elements down the priority line
+    int i;
+    for(i = assoc - 1; i > 0; i--) {
+	set[i] = set[i - 1];
+    }
+    set[0] = tag;
+    
+    return evicts;
 }

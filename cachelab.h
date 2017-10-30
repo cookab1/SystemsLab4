@@ -22,7 +22,7 @@ typedef struct cache{
   unsigned int setIndexBits;
   unsigned int blockBits;
   unsigned int blockSize;
-  unsigned long **tag;
+  unsigned long **tags;
 } cache_t;
 
 /* 
@@ -43,6 +43,9 @@ void correctTrans(int M, int N, int A[N][M], int B[M][N]);
 void registerTransFunction(
     void (*trans)(int M,int N,int[N][M],int[M][N]), char* desc);
 
+int shiftAllTags(int, unsigned long*, int);
+
+void makeTagRecent(int, unsigned long*);
 
 int isError(char*);
 
