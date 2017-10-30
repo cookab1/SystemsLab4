@@ -97,11 +97,22 @@ int main(int argc, char **argv)
 	        exit(1);
             }
 
-	    blockInd = getBits(0, cache->blockBits - 1, address);
+	    setInd = getBits(0, cache->setIndexBits - 1, address);
 	    tag = getBits(31 - cache->numTag, 31, address);
 
-
-	    cache->num_sets[
+	    bool found = false;
+	    for(i=0; i < cache->assoc && !found; i++) {
+	        if(cache->num_sets[setInd][i] == tag) {
+    	            found = true;
+    	            makeRecent(i, num_sets[setInd]);
+	            hits++;
+	        }
+	        else if(i == cache->assoc - 1) {
+		    misses++;
+		    shift(tag, num_sets[setInd]);
+                    
+	        }
+	    }
         }
         //printf(" %c %lx,%x\n", opp, address, size);
     }
@@ -131,19 +142,3 @@ int getBits(int srt, int end, unsigned long src) {
     src &= ((1L << numBits) - 1);
     return src; 
 }
-/*
-uint64_t getBits(unsigned low, unsigned high, uint64_t source)
-{
-    assert(high < 64 && (low <= high));
-
-    unsigned numBits = high - low + 1;
-    if (numBits == 64)
-    {
-        return source;
-    }
-    source >>= low;
-    source &= ((1L << numBits) - 1);
-
-    return source;
-}
-*/
