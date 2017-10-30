@@ -122,7 +122,14 @@ int isError(char *buf) {
 }
 
 int getBits(int srt, int end, unsigned long src) {
-
+    unsigned numBits = end - srt + 1;
+    if (numBits == 32)
+    {
+        return src;
+    }
+    src >>= srt;
+    src &= ((1L << numBits) - 1);
+    return src; 
 }
 /*
 uint64_t getBits(unsigned low, unsigned high, uint64_t source)
