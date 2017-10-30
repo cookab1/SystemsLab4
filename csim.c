@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	    for(i=0; i < cache->assoc && !found; i++) {
 	        if(cache->num_sets[setInd][i] == tag) {
     	            found = true;
-    	            makeRecent(i, num_sets[setInd]);
+    	            makeTagRecent(i, num_sets[setInd]);
 	            hits++;
 	        }
 	        else if(i == cache->assoc - 1) {
@@ -125,6 +125,17 @@ int main(int argc, char **argv)
     
     //printSummary(0, 0, 0);
     return 0;
+}
+
+void makeTagRecent(int currIndex, unsigned long *set){
+    unsigned long tempTag = set[currIndex];
+    //we might need to make this i <= currIndex; 
+    for (int i = currIndex; i > 0; i--){
+        //shift all the tags down
+        set[i] = set[i - 1];
+    }
+    set[0] = tempTag;
+    
 }
 
 int isError(char *buf) {
