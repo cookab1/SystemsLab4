@@ -90,9 +90,9 @@ int main(int argc, char **argv)
         fgets(buf, 80, file);
         //printf("First char of buf: %c", buf[0]);
         //if 'I' is in the first char slot, skip the line
-        if(buf[0] != 'I') {
-            sscanf(buf, " %c %lx,%x", &opp, &address, &size); 
-
+        sscanf(buf, " %c %lx,%x", &opp, &address, &size); 
+        
+        if((opp == 'S') || (opp == 'L') || (opp == 'M')) {
 
 	    setInd = getBits(cache->blockBits, cache->blockBits + cache->setIndexBits - 1, address);
 	    tag = getBits(32 - numTag, 31, address);
