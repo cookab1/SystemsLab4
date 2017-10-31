@@ -52,23 +52,22 @@ int main(int argc, char **argv)
     //malloc the 2 dimen array
     cache->tags = calloc(cache->num_sets, sizeof cache->tags);
     int i = 0;
-    for(; i < cache->num_sets; i++)
-    {
-	cache->tags[i] = calloc(cache->assoc, sizeof cache->tags);
+    for(; i < cache->num_sets; i++) {
+	    cache->tags[i] = calloc(cache->assoc, sizeof cache->tags);
     }
-    
-    //is the 2 dimen array allocated?
-    /*int j;
-    int flag = 1;
-    for(i = 0; i < cache->num_sets; i++) {
-        for(j = 0; j < cache->assoc; j++) {
-            if (cache->tag == NULL)
-                flag = 0;
-        }
-    }
-    printf("%d \n", flag);
-    */
 
+    //initialize all elements to -1
+    int j;
+    for(i = 0; i < cache->num_sets; i++) {
+	    for(j = 0; j < cache->assoc; j++) {
+	        cache->tags[i][j] = -1;
+	    }
+    }
+ 
+    if(isError(cache) == 1) {
+        exit(1);
+    }   
+        
     //Print input file
     /*
     file = fopen(fileName, "r");
@@ -94,12 +93,9 @@ int main(int argc, char **argv)
         if(buf[0] != 'I') {
             sscanf(buf, " %c %lx,%x", &opp, &address, &size); 
 
-            if(isError(buf) == 1) {
-	        exit(1);
-            }
 
-	    setInd = getBits(cache->blockBits - 1, cache->blockBits + cache->setIndexBits - 1, address);
-	    tag = getBits(31 - numTag, 31, address);
+	    setInd = getBits(cache->blockBits, cache->blockBits + cache->setIndexBits - 1, address);
+	    tag = getBits(32 - numTag, 31, address);
 
 	    bool found = false;
 	    for(i = 0; i < cache->assoc && !found; i++) {
@@ -107,41 +103,51 @@ int main(int argc, char **argv)
     	            found = true;
     	            makeTagRecent(i, cache->tags[setInd]);
     	            hits++;
+    	            if(opp == 'M')
+        	        hits++;
 	        }
 	        else if(i == cache->assoc - 1) {
 		    misses++;
 		    if(shiftAllTags(tag, cache->tags[setInd], cache->assoc))
     		        evicts++;
+    		    if(opp == 'M')
+        		hits++;
 	        }
 	    }
-        }
-        //printf(" %c %lx,%x\n", opp, address, size);
+        } 
     }
-    /*
-    //print line
-    for(i = 0; i < 80; i++) {
-	putchar(buf[i]);
-    }
-    */
-
+    
     printSummary(hits, misses, evicts);
     return 0;
 }
 
-void makeTagRecent(int currIndex, unsigned long *set){
-    unsigned long tempTag = set[currIndex];
-    //we might need to make this i <= currIndex; 
-    for (int i = currIndex; i > 0; i--){
-        //shift all the tags down
-        set[i] = set[i - 1];
-    }
-    set[0] = tempTag;
-    
-}
 
-int isError(char *buf) {
-    //error checking and print statments
-    return false;
+// Helper methods
+
+int isError(cache_t *cache) {
+    bool error = false;
+
+    //check if the cache was malloced correctly
+    int i;
+    int j;
+    for(i = 0; i < cache->num_sets; i++) {
+        for(j = 0; j < cache->assoc; j++) {
+            if (cache->tags == NULL) {
+                error = true;
+                printf("%s\n", "Cache allocation failed");        
+            }
+        }
+    }
+
+    //input validation
+    
+    //is assoc 1,2,4, or 8?
+    if(cache->assoc != 1 && cache->assoc != 2 && cache->assoc != 4 && cache->assoc != 8) {
+        error = true;
+        printf("%s\n", "The Associativity should be 1, 2, 4, or 8");
+    }
+
+    return error;
 }
 
 int getBits(int srt, int end, unsigned long src) {
@@ -157,15 +163,26 @@ int getBits(int srt, int end, unsigned long src) {
 
 int shiftAllTags(int tag, unsigned long *set, int assoc){
     bool evicts = false;
-    if(set[assoc - 1] != 0)
+    if(set[assoc - 1] != -1)
         evicts = true;
 
     //shift all elements down the priority line
     int i;
     for(i = assoc - 1; i > 0; i--) {
-	set[i] = set[i - 1];
+	    set[i] = set[i - 1];
     }
     set[0] = tag;
     
     return evicts;
+}
+
+void makeTagRecent(int currIndex, unsigned long *set){
+    unsigned long tempTag = set[currIndex];
+    //we might need to make this i <= currIndex; 
+    for (int i = currIndex; i > 0; i--){
+        //shift all the tags down
+        set[i] = set[i - 1];
+    }
+    set[0] = tempTag;
+    
 }

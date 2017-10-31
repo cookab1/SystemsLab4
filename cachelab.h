@@ -49,6 +49,6 @@ void makeTagRecent(int, unsigned long*);
 
 int getBits(int, int, unsigned long);
 
-int isError(char*);
+int isError(cache_t*);
 
 #endif /* CACHELAB_TOOLS_H */
