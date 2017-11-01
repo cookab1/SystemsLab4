@@ -25,12 +25,39 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
-    int i, j;
-    unsigned long a;
+    int i, j, k, z, tmp;
+    //unsigned long a;
 
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < M; j++) {
-            a = (unsigned long) &A[i][j] >> 5;
+    for (z = 0; z < 8; z++) {
+        for (k = 0; k < N; k+=8) {
+            for (i = k; i < k+8; i++) {
+                for(j = z; j < M; j+=8) {
+                    tmp = A[i][j];
+                    B[j][i] = tmp;
+                }
+                /*
+                a = (unsigned long) &A[i][j] >> 5;
+                a &= (1 << 5) - 1;
+                if(j == M - 1){
+                    printf("%lu\n", a);
+                }
+                else{
+                    if(a >= 10){
+                        printf("%lu, ", a);
+                    }
+                    else{
+                        printf("%lu , ", a);
+                    }
+                }
+                //B[j][i] = tmp;
+                */
+            }
+        }
+    }
+    /*
+    for(i = 0; i < M; i++) {
+        for(j = 0; j < N; j++) {
+            a = (unsigned long) &B[i][j] >> 5;
             a &= (1 << 5) - 1;
             if(j == M - 1){
                 printf("%lu\n", a);
@@ -43,9 +70,9 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
                     printf("%lu , ", a);
                 }
             }
-            //B[j][i] = tmp;
         }
-    }    
+    }
+    */
 }
 
 /* 
