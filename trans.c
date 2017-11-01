@@ -26,13 +26,23 @@ char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
     int i, j;
+    unsigned long a;
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < M; j++) {
-            if(j == M - 1)
-                printf("%p\n", &A[i][j]);
-            else
-                printf("%p, ", &A[i][j]);
+            a = (unsigned long) &A[i][j] >> 5;
+            a &= (1 << 5) - 1;
+            if(j == M - 1){
+                printf("%lu\n", a);
+            }
+            else{
+                if(a >= 10){
+                    printf("%lu, ", a);
+                }
+                else{
+                    printf("%lu , ", a);
+                }
+            }
             //B[j][i] = tmp;
         }
     }    
